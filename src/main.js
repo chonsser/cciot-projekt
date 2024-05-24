@@ -1,7 +1,7 @@
 import { app } from "@azure/functions";
 
 async function status(request, context) {
-    context.log(`Http function processed request for url "${request.url}"`);
+    context.log(`Http function processed request for  url "${request.url}"`);
 
     return {
         status: 200,
