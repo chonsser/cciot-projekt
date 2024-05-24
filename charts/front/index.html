@@ -79,18 +79,18 @@
     </div>
     <script>
         async function fetchTemperatureData() {
-            const response = await fetch('temperatura.json');
+            const response = await fetch('?filename=temperatura.json');
             const data = await response.json();
             return data;
         }
 
         function getWeatherIcon(temperature) {
             if (temperature < 15) {
-                return "cold.png"; // Wstaw odpowiednią ścieżkę do ikony
+                return "?filename=cold.png"; // Wstaw odpowiednią ścieżkę do ikony
             } else if (temperature > 21) {
-                return "hot.png"; // Wstaw odpowiednią ścieżkę do ikony
+                return "?filename=hot.png"; // Wstaw odpowiednią ścieżkę do ikony
             } else {
-                return "medium.png"; // Wstaw odpowiednią ścieżkę do ikony
+                return "?filename=medium.png"; // Wstaw odpowiednią ścieżkę do ikony
             }
         }
         let myChart;
