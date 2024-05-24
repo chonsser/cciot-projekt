@@ -3,6 +3,7 @@
   "Values": {
     "FUNCTIONS_WORKER_RUNTIME": "node",
     "AzureWebJobsFeatureFlags": "EnableWorkerIndexing",
-    "AzureWebJobsStorage": ""
+    "AzureWebJobsStorage": "",
+    "SqlConnectionString": "Server=tcp:cciot-projekt-db.database.windows.net,1433;Initial Catalog=cciot-projekt-db;Persist Security Info=False;User ID=cciot-admin;Password=tajnehaslo1234$;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
   }
 }
