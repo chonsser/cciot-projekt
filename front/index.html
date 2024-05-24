@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wykres Temperatury</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f1f3f4;
+        }
+
+
+        .container {
+            width: 80%;
+            max-width: 800px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-top: 20px;
+            padding: 20px;
+        }
+
+        .title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .temperature-blocks {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .temperature-block {
+            width: 100px;
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .temperature-block:hover {
+            background-color: #e0e0e0;
+        }
+
+        .temperature-block img {
+            width: 30px;
+            height: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">Pogoda</div>
+        <div class="chart-container">
+            <canvas id="temperatureChart"></canvas>
+        </div>
+        <div class="temperature-blocks" id="temperatureBlocks"></div>
+    </div>
+    <script>
+        async function fetchTemperatureData() {
+            const response = await fetch('temperatura.json');
+            const data = await response.json();
+            return data;
+        }
+
+        function getWeatherIcon(temperature) {
+            if (temperature < 15) {
+                return "cold.png"; // Wstaw odpowiednią ścieżkę do ikony
+            } else if (temperature > 21) {
+                return "hot.png"; // Wstaw odpowiednią ścieżkę do ikony
+            } else {
+                return "medium.png"; // Wstaw odpowiednią ścieżkę do ikony
+            }
+        }
+        let myChart;
+        function createTemperatureChart(data, date) {
+            if (myChart) {
+                myChart.destroy();
+            }
+            const ctx = document.getElementById('temperatureChart').getContext('2d');
+            const filteredData = data.filter(entry => entry.date.startsWith(date));
+            const labels = filteredData.map(entry => new Date(entry.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            const temperatures = filteredData.map(entry => entry.temperature);
+            const totalDuration = 1500;
+            const delayBetweenPoints = totalDuration / data.length;
+            const previousY = (ctx) => ctx.index === 0 ? ctx.chart.scales.y.getPixelForValue(100) : ctx.chart.getDatasetMeta(ctx.datasetIndex).data[ctx.index - 1].getProps(['y'], true).y;
+            const animation = {
+                x: {
+                    type: 'number',
+                    easing: 'linear',
+                    duration: delayBetweenPoints,
+                    from: NaN, // the point is initially skipped
+                    delay(ctx) {
+                        if (ctx.type !== 'data' || ctx.xStarted) {
+                            return 0;
+                        }
+                        ctx.xStarted = true;
+                        return ctx.index * delayBetweenPoints;
+                    }
+                },
+                y: {
+                    type: 'number',
+                    easing: 'linear',
+                    duration: delayBetweenPoints,
+                    from: previousY,
+                    delay(ctx) {
+                        if (ctx.type !== 'data' || ctx.yStarted) {
+                            return 0;
+                        }
+                        ctx.yStarted = true;
+                        return ctx.index * delayBetweenPoints;
+                    }
+                }
+            };
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Temperatura (°C)',
+                        data: temperatures,
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false, // tutaj usuwamy siatkę
+                            },
+                            ticks: {
+                                stepSize: 5,
+                                callback: function (value) {
+                                    return value + '°C';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false, // tutaj usuwamy siatkę
+                            },
+                        }
+                    },
+                    animation,
+                    interaction: {
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayTemperatureBlocks(data) {
+            const blocksContainer = document.getElementById('temperatureBlocks');
+            const dailyData = {};
+
+            data.forEach(entry => {
+                const date = entry.date.split('T')[0];
+                if (!dailyData[date]) {
+                    dailyData[date] = { min: entry.temperature, max: entry.temperature, dateObj: new Date(entry.date) };
+                } else {
+                    dailyData[date].min = Math.min(dailyData[date].min, entry.temperature);
+                    dailyData[date].max = Math.max(dailyData[date].max, entry.temperature);
+                }
+            });
+
+            for (const [date, temps] of Object.entries(dailyData)) {
+                const block = document.createElement('div');
+                block.className = 'temperature-block';
+                const maxIcon = getWeatherIcon(temps.max);
+                block.innerHTML = `<strong>${temps.dateObj.toLocaleDateString('pl-PL', { weekday: 'short', day: '2-digit', month: 'short' })}</strong><br>
+                                   <img src="${maxIcon}" alt="Max: ${temps.max}°C"><br>${temps.max}°C / ${temps.min}°C`;
+                block.onclick = () => createTemperatureChart(data, date);
+                blocksContainer.appendChild(block);
+            }
+        }
+
+        async function init() {
+            const data = await fetchTemperatureData();
+            createTemperatureChart(data, data[0].date.split('T')[0]);
+            displayTemperatureBlocks(data);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+
+</html>
