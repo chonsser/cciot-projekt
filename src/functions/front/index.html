@@ -180,7 +180,6 @@
                 }
             });
         }
-
         function displayTemperatureBlocks(data) {
             const blocksContainer = document.getElementById('temperatureBlocks');
             const dailyData = {};
@@ -200,7 +199,7 @@
                 block.className = 'temperature-block';
                 const maxIcon = getWeatherIcon(temps.max);
                 block.innerHTML = `<strong>${temps.dateObj.toLocaleDateString('pl-PL', { weekday: 'short', day: '2-digit', month: 'short' })}</strong><br>
-                                   <img src="${maxIcon}" alt="Max: ${temps.max}°C"><br>${temps.max}°C / ${temps.min}°C`;
+                           <img src="${maxIcon}" alt="Max: ${temps.max.toFixed(2)}°C"><br>${temps.max.toFixed(2)}°C / ${temps.min.toFixed(2)}°C`;
                 block.onclick = () => createTemperatureChart(data, date);
                 blocksContainer.appendChild(block);
             }
