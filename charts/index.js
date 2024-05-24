@@ -13,7 +13,6 @@ module.exports = async function (context, req) {
     if(filename) {
         let allowedAssets = [
             'medium.png',
-            'temperatura.json',
             'hot.png',
             'cold.png'
         ]

@@ -79,7 +79,7 @@
     </div>
     <script>
         async function fetchTemperatureData() {
-            const response = await fetch('?filename=temperatura.json');
+            const response = await fetch('/api/fetch-data-from-db');
             const data = await response.json();
             return data;
         }
