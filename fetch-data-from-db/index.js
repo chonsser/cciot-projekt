@@ -2,6 +2,11 @@ module.exports = async function (context, req) {
     const path = require("path");
     const fs = require("fs");
 
+    const sendToSql = output.sql({
+        commandText: 'dbo.ToDo',
+        connectionStringSetting: 'SqlConnectionString',
+    });
+
     const indexPath = path.join(context.executionContext.functionDirectory, 'temperatura.json');
     const responseMessage = fs.readFileSync(indexPath)
 
